@@ -1,0 +1,7 @@
+# Never commit these
+.env.local
+.next/
+node_modules/
+
+# meals.json is committed by GitHub Actions bot
+# DO NOT add meals.json here
