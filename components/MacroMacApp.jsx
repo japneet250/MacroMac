@@ -234,11 +234,11 @@ export default function MacroMacApp({ meals }) {
 
       {/* Footer */}
       <div style={{ marginTop: '2rem', fontSize: 11, color: '#333', textAlign: 'center' }}>
-        Data sourced from{' '}
+        {/* Data sourced from{' '}
         <a href="https://macnutrition.mcmaster.ca" target="_blank" rel="noopener noreferrer" style={{ color: '#444' }}>
           macnutrition.mcmaster.ca
-        </a>
-        {' '}· Updated daily · Built for Mac students 🦅
+        </a> */}
+        {' '}· Updated daily · Built for Mac students By a Mac Student 🦅
       </div>
 
       <style>{`
