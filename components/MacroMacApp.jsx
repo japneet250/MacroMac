@@ -248,9 +248,19 @@ function MealCard({ meal, isTop, score, locationHours }) {
     }
 
     // Parse hours to show opening time when closed
-    const match = hours.hours.match(/(\d{1,2}):(\d{2})\s(AM|PM)/)
+    // Handle formats: "11:00 AM", "11:00AM", "11 AM", etc.
+    const match = hours.hours.match(/(\d{1,2}):?(\d{2})?\s*(AM|PM|am|pm)/i)
     if (match) {
-      return `Closed · Opens ${match[1]}:${match[2]} ${match[3]}`
+      const hour = match[1]
+      const mins = match[2] || '00'
+      const meridiem = match[3].toUpperCase()
+      return `Closed · Opens ${hour}:${mins} ${meridiem}`
+    }
+
+    // If it just contains a time like "11 AM - 3 PM", extract first time
+    const simpleMatch = hours.hours.match(/(\d{1,2})\s*(AM|PM|am|pm)/i)
+    if (simpleMatch) {
+      return `Closed · Opens ${simpleMatch[1]}:00 ${simpleMatch[2].toUpperCase()}`
     }
 
     return 'Closed'
