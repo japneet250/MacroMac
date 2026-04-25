@@ -51,6 +51,18 @@ export default function MacroMacApp({ meals }) {
 
   const toggleTag = (t) => setTags(prev => ({ ...prev, [t]: !prev[t] }))
 
+  const openCount = Object.values(hours).filter(h => h.isOpen).length
+  const openLocationNames = Object.entries(hours)
+    .filter(([, h]) => h.isOpen)
+    .map(([name]) => name)
+  const openLocationPreview = openLocationNames.length === 0
+    ? ''
+    : openLocationNames.length === 1
+      ? openLocationNames[0]
+      : openLocationNames.length === 2
+        ? openLocationNames.join(' and ')
+        : `${openLocationNames.slice(0, 3).join(', ')}${openLocationNames.length > 3 ? ` + ${openLocationNames.length - 3} more` : ''}`
+
   const askAI = async () => {
     if (!aiQuestion.trim() || aiLoading) return
     setAiLoading(true)
@@ -70,9 +82,6 @@ export default function MacroMacApp({ meals }) {
     setAiQuestion('')
   }
 
-  // Count open locations
-  const openCount = Object.values(hours).filter(h => h.isOpen).length
-
   return (
     <main style={{ maxWidth: 720, margin: '0 auto', padding: '1.5rem 1rem', paddingBottom: '3rem' }}>
 
@@ -88,11 +97,16 @@ export default function MacroMacApp({ meals }) {
 
       {/* Live open locations banner */}
       {openCount > 0 && (
-        <div style={{ background: '#0a1a0a', border: '0.5px solid #166534', borderRadius: 10, padding: '8px 14px', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: 8 }}>
-          <div style={{ width: 7, height: 7, borderRadius: '50%', background: '#4ade80', flexShrink: 0, animation: 'pulse 2s infinite' }} />
-          <span style={{ fontSize: 12, color: '#4ade80', fontWeight: 500 }}>
-            {openCount} location{openCount !== 1 ? 's' : ''} open right now on campus
-          </span>
+        <div style={{ background: '#0a1a0a', border: '0.5px solid #166534', borderRadius: 10, padding: '10px 14px', marginBottom: '1.5rem', display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+          <div style={{ width: 7, height: 7, borderRadius: '50%', background: '#4ade80', flexShrink: 0, animation: 'pulse 2s infinite', marginTop: 6 }} />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+            <span style={{ fontSize: 12, color: '#4ade80', fontWeight: 500 }}>
+              {openCount} location{openCount !== 1 ? 's' : ''} open right now on campus
+            </span>
+            <span style={{ fontSize: 11, color: '#94a3b8' }}>
+              {openLocationPreview}
+            </span>
+          </div>
         </div>
       )}
 
@@ -240,7 +254,7 @@ function MealCard({ meal, isTop, score, locationHours }) {
         <span style={{ fontSize: 12, color: 'var(--muted)' }}>{meal.location} · {meal.section}</span>
         {locationHours && (
           <span style={{ fontSize: 10, padding: '1px 7px', borderRadius: 100, fontWeight: 600, background: locationHours.isOpen ? '#052a1a' : '#1a0a0a', color: locationHours.isOpen ? '#4ade80' : '#f87171', border: `0.5px solid ${locationHours.isOpen ? '#166534' : '#991b1b'}` }}>
-            {locationHours.isOpen ? '● Open' : '● Closed'}
+            {locationHours.isOpen ? `Open · ${locationHours.hours || 'now'}` : '● Closed'}
           </span>
         )}
       </div>
