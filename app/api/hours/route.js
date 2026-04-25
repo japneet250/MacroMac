@@ -2,19 +2,28 @@ const LIBCAL_URL = 'https://hospitality-mcmaster.libcal.com/widget/hours/grid?ii
 
 const LOCATION_MAP = {
   'Centro': 'Centro',
+  'Centro (Commons)': 'Centro',
   'La Piazza': 'La Piazza',
+  'La Piazza (MUSC)': 'La Piazza',
   'Bistro 2 Go': 'Bistro 2 Go',
+  'Bistro-2-Go (MKR)': 'Bistro 2 Go',
   'The Bistro @ MKR': 'Bistro @ MKR',
   'Bistro @ MKR': 'Bistro @ MKR',
   'IAHS Café': 'IAHS Café',
   'IAHS Cafe': 'IAHS Café',
   'Reactor Café': 'Reactor Café',
+  'Reactor Café (Thode)': 'Reactor Café',
   'Reactor Cafe': 'Reactor Café',
   'Café One': 'Café One',
+  'Café One (MDCL)': 'Café One',
   'Cafe One': 'Café One',
   'Eco Bean': 'Eco Bean - MUMC',
+  'Ecobean (HSC)': 'Eco Bean - MUMC',
   'Eco Bean - MUMC': 'Eco Bean - MUMC',
+  'Café on Bay': 'Café on Bay',
+  'E-Café (ETB)': 'E-Café',
 }
+
 
 export async function GET() {
   try {
