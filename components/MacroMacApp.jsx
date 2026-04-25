@@ -1,8 +1,7 @@
 'use client'
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 
 export default function MacroMacApp({ meals }) {
-  // Filter state
   const [budget, setBudget] = useState(15)
   const [minProtein, setMinProtein] = useState(20)
   const [maxCalories, setMaxCalories] = useState(700)
@@ -10,25 +9,26 @@ export default function MacroMacApp({ meals }) {
   const [tags, setTags] = useState({ halal: false, vegetarian: false, vegan: false, glutenFree: false })
   const [sort, setSort] = useState('value')
   const [searched, setSearched] = useState(false)
-
-  // AI state
   const [aiQuestion, setAiQuestion] = useState('')
-  const [aiAnswer, setAiAnswer] = useState('Ask me anything — "best high protein lunch under $12" or "halal options under 600 cal"')
+  const [aiAnswer, setAiAnswer] = useState('Ask me anything — "best halal lunch under $12" or "high protein under 600 cal"')
   const [aiLoading, setAiLoading] = useState(false)
+  const [hours, setHours] = useState({})
 
-  // Unique locations from data
-  const locations = useMemo(() => {
-    const locs = [...new Set(meals.map(m => m.location))].sort()
-    return locs
-  }, [meals])
+  // Fetch live hours on load
+  useEffect(() => {
+    fetch('/api/hours')
+      .then(r => r.json())
+      .then(d => setHours(d.hours || {}))
+      .catch(() => {})
+  }, [])
 
-  // Scoring function
+  const locations = useMemo(() => [...new Set(meals.map(m => m.location))].sort(), [meals])
   const valueScore = (m) => Math.round((m.protein / m.price) * 10)
 
-  // Filter + sort
   const results = useMemo(() => {
     if (!searched) return []
     let filtered = meals.filter(m => {
+      if (!m.price || !m.calories || !m.protein) return false
       if (m.price > budget) return false
       if (m.protein < minProtein) return false
       if (m.calories > maxCalories) return false
@@ -39,7 +39,6 @@ export default function MacroMacApp({ meals }) {
       if (tags.glutenFree && !m.glutenFree) return false
       return true
     })
-
     filtered.sort((a, b) => {
       if (sort === 'value') return valueScore(b) - valueScore(a)
       if (sort === 'protein') return b.protein - a.protein
@@ -47,7 +46,6 @@ export default function MacroMacApp({ meals }) {
       if (sort === 'calories') return a.calories - b.calories
       return 0
     })
-
     return filtered
   }, [searched, meals, budget, minProtein, maxCalories, location, tags, sort])
 
@@ -72,6 +70,9 @@ export default function MacroMacApp({ meals }) {
     setAiQuestion('')
   }
 
+  // Count open locations
+  const openCount = Object.values(hours).filter(h => h.isOpen).length
+
   return (
     <main style={{ maxWidth: 720, margin: '0 auto', padding: '1.5rem 1rem', paddingBottom: '3rem' }}>
 
@@ -81,19 +82,27 @@ export default function MacroMacApp({ meals }) {
           Macro<span style={{ color: 'var(--accent)' }}>Mac</span>
         </h1>
       </div>
-      <p style={{ fontSize: '0.85rem', color: 'var(--muted)', marginBottom: '2rem', fontWeight: 300 }}>
+      <p style={{ fontSize: '0.85rem', color: 'var(--muted)', marginBottom: openCount > 0 ? '0.75rem' : '2rem', fontWeight: 300 }}>
         Find the best meals on McMaster campus — filtered by your macros & budget
       </p>
+
+      {/* Live open locations banner */}
+      {openCount > 0 && (
+        <div style={{ background: '#0a1a0a', border: '0.5px solid #166534', borderRadius: 10, padding: '8px 14px', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div style={{ width: 7, height: 7, borderRadius: '50%', background: '#4ade80', flexShrink: 0, animation: 'pulse 2s infinite' }} />
+          <span style={{ fontSize: 12, color: '#4ade80', fontWeight: 500 }}>
+            {openCount} location{openCount !== 1 ? 's' : ''} open right now on campus
+          </span>
+        </div>
+      )}
 
       {/* AI Assistant */}
       <div style={{ background: 'var(--surface)', border: '0.5px solid var(--border)', borderRadius: 14, padding: '1.2rem', marginBottom: '1.5rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: '0.5rem' }}>
           <div style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--accent)', animation: 'pulse 2s infinite' }} />
-          <span style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--accent)', fontWeight: 700 }}>
-            AI Meal Assistant
-          </span>
+          <span style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--accent)', fontWeight: 700 }}>AI Meal Assistant</span>
         </div>
-        <p style={{ fontSize: '0.85rem', color: aiAnswer ? '#aaa' : 'var(--muted)', lineHeight: 1.6, marginBottom: '0.75rem', minHeight: 40 }}>
+        <p style={{ fontSize: '0.85rem', color: '#aaa', lineHeight: 1.6, marginBottom: '0.75rem', minHeight: 40, whiteSpace: 'pre-line' }}>
           {aiLoading ? '...' : aiAnswer}
         </p>
         <div style={{ display: 'flex', gap: 8 }}>
@@ -103,20 +112,9 @@ export default function MacroMacApp({ meals }) {
             onKeyDown={e => e.key === 'Enter' && askAI()}
             placeholder="What should I eat today?"
             disabled={aiLoading}
-            style={{
-              flex: 1, background: '#111', border: '0.5px solid var(--border)', borderRadius: 8,
-              padding: '8px 12px', color: 'var(--text)', fontFamily: 'inherit', fontSize: 13, outline: 'none'
-            }}
+            style={{ flex: 1, background: '#111', border: '0.5px solid var(--border)', borderRadius: 8, padding: '8px 12px', color: 'var(--text)', fontFamily: 'inherit', fontSize: 13, outline: 'none' }}
           />
-          <button
-            onClick={askAI}
-            disabled={aiLoading}
-            style={{
-              background: 'var(--accent)', color: '#0f0f0f', border: 'none', borderRadius: 8,
-              padding: '8px 14px', fontFamily: 'Syne, sans-serif', fontSize: 12, fontWeight: 700,
-              cursor: 'pointer', whiteSpace: 'nowrap', opacity: aiLoading ? 0.6 : 1
-            }}
-          >
+          <button onClick={askAI} disabled={aiLoading} style={{ background: 'var(--accent)', color: '#0f0f0f', border: 'none', borderRadius: 8, padding: '8px 14px', fontFamily: 'Syne, sans-serif', fontSize: 12, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap', opacity: aiLoading ? 0.6 : 1 }}>
             Ask ↗
           </button>
         </div>
@@ -125,23 +123,21 @@ export default function MacroMacApp({ meals }) {
       {/* Controls */}
       <div style={{ background: 'var(--surface)', border: '0.5px solid var(--border)', borderRadius: 16, padding: '1.5rem', marginBottom: '1.5rem' }}>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-
           <SliderControl label="Max budget" value={budget} setValue={setBudget} min={5} max={25} step={1} prefix="$" />
           <SliderControl label="Min protein (g)" value={minProtein} setValue={setMinProtein} min={0} max={60} step={5} suffix="g" />
           <SliderControl label="Max calories" value={maxCalories} setValue={setMaxCalories} min={200} max={1200} step={50} />
-
           <div>
-            <label style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--muted)', fontWeight: 500, display: 'block', marginBottom: 8 }}>
-              Location
-            </label>
+            <label style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--muted)', fontWeight: 500, display: 'block', marginBottom: 8 }}>Location</label>
             <select value={location} onChange={e => setLocation(e.target.value)}>
               <option value="all">All campus</option>
-              {locations.map(l => <option key={l} value={l}>{l}</option>)}
+              {locations.map(l => {
+                const h = hours[l]
+                return <option key={l} value={l}>{l}{h ? (h.isOpen ? ' 🟢' : ' 🔴') : ''}</option>
+              })}
             </select>
           </div>
         </div>
 
-        {/* Diet tags */}
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: '0.75rem' }}>
           {[
             { key: 'halal', label: 'Halal' },
@@ -149,31 +145,13 @@ export default function MacroMacApp({ meals }) {
             { key: 'vegan', label: 'Vegan' },
             { key: 'glutenFree', label: 'Gluten Free' },
           ].map(({ key, label }) => (
-            <button
-              key={key}
-              onClick={() => toggleTag(key)}
-              style={{
-                padding: '5px 12px', borderRadius: 100, fontSize: 12, fontWeight: 500,
-                border: tags[key] ? '0.5px solid var(--accent)' : '0.5px solid var(--border)',
-                background: tags[key] ? 'var(--accent)' : '#111',
-                color: tags[key] ? '#0f0f0f' : 'var(--muted)',
-                cursor: 'pointer', transition: 'all 0.15s'
-              }}
-            >
+            <button key={key} onClick={() => toggleTag(key)} style={{ padding: '5px 12px', borderRadius: 100, fontSize: 12, fontWeight: 500, border: tags[key] ? '0.5px solid var(--accent)' : '0.5px solid var(--border)', background: tags[key] ? 'var(--accent)' : '#111', color: tags[key] ? '#0f0f0f' : 'var(--muted)', cursor: 'pointer', transition: 'all 0.15s' }}>
               {label}
             </button>
           ))}
         </div>
 
-        <button
-          onClick={() => setSearched(true)}
-          style={{
-            width: '100%', marginTop: '1rem', padding: '14px',
-            background: 'var(--accent)', color: '#0f0f0f', border: 'none', borderRadius: 12,
-            fontFamily: 'Syne, sans-serif', fontSize: '1rem', fontWeight: 700,
-            cursor: 'pointer', letterSpacing: '0.01em', transition: 'opacity 0.15s'
-          }}
-        >
+        <button onClick={() => setSearched(true)} style={{ width: '100%', marginTop: '1rem', padding: '14px', background: 'var(--accent)', color: '#0f0f0f', border: 'none', borderRadius: 12, fontFamily: 'Syne, sans-serif', fontSize: '1rem', fontWeight: 700, cursor: 'pointer', letterSpacing: '0.01em' }}>
           Find My Meals
         </button>
       </div>
@@ -190,7 +168,6 @@ export default function MacroMacApp({ meals }) {
             </span>
           </div>
 
-          {/* Sort buttons */}
           {results.length > 0 && (
             <div style={{ display: 'flex', gap: 6, marginBottom: '1rem', flexWrap: 'wrap' }}>
               {[
@@ -199,18 +176,7 @@ export default function MacroMacApp({ meals }) {
                 { key: 'price', label: 'Cheapest' },
                 { key: 'calories', label: 'Lowest cal' },
               ].map(({ key, label }) => (
-                <button
-                  key={key}
-                  onClick={() => setSort(key)}
-                  style={{
-                    padding: '4px 10px', borderRadius: 100, fontSize: 11, fontWeight: 500,
-                    textTransform: 'uppercase', letterSpacing: '0.06em',
-                    border: sort === key ? '0.5px solid var(--accent)' : '0.5px solid var(--border)',
-                    background: sort === key ? 'var(--surface)' : '#111',
-                    color: sort === key ? 'var(--accent)' : 'var(--muted)',
-                    cursor: 'pointer', transition: 'all 0.15s'
-                  }}
-                >
+                <button key={key} onClick={() => setSort(key)} style={{ padding: '4px 10px', borderRadius: 100, fontSize: 11, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.06em', border: sort === key ? '0.5px solid var(--accent)' : '0.5px solid var(--border)', background: sort === key ? 'var(--surface)' : '#111', color: sort === key ? 'var(--accent)' : 'var(--muted)', cursor: 'pointer' }}>
                   {label}
                 </button>
               ))}
@@ -225,25 +191,18 @@ export default function MacroMacApp({ meals }) {
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               {results.map((meal, i) => (
-                <MealCard key={`${meal.name}-${meal.location}-${i}`} meal={meal} isTop={i === 0} score={valueScore(meal)} />
+                <MealCard key={`${meal.name}-${i}`} meal={meal} isTop={i === 0} score={valueScore(meal)} locationHours={hours[meal.location]} />
               ))}
             </div>
           )}
         </div>
       )}
 
-      {/* Footer */}
       <div style={{ marginTop: '2rem', fontSize: 11, color: '#333', textAlign: 'center' }}>
-        {/* Data sourced from{' '}
-        <a href="https://macnutrition.mcmaster.ca" target="_blank" rel="noopener noreferrer" style={{ color: '#444' }}>
-          macnutrition.mcmaster.ca
-        </a> */}
-        {' '}· Updated daily · Built for Mac students By a Mac Student 🦅
+        Data from <a href="https://macnutrition.mcmaster.ca" target="_blank" rel="noopener noreferrer" style={{ color: '#444' }}>macnutrition.mcmaster.ca</a> · Hours from McMaster Hospitality · Updated daily
       </div>
 
-      <style>{`
-        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
-      `}</style>
+      <style>{`@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }`}</style>
     </main>
   )
 }
@@ -251,20 +210,16 @@ export default function MacroMacApp({ meals }) {
 function SliderControl({ label, value, setValue, min, max, step, prefix = '', suffix = '' }) {
   return (
     <div>
-      <label style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--muted)', fontWeight: 500, display: 'block', marginBottom: 8 }}>
-        {label}
-      </label>
+      <label style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--muted)', fontWeight: 500, display: 'block', marginBottom: 8 }}>{label}</label>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
         <input type="range" min={min} max={max} step={step} value={value} onChange={e => setValue(Number(e.target.value))} style={{ flex: 1 }} />
-        <span className="font-display" style={{ fontSize: '1rem', fontWeight: 700, minWidth: 52, color: 'var(--accent)', textAlign: 'right' }}>
-          {prefix}{value}{suffix}
-        </span>
+        <span className="font-display" style={{ fontSize: '1rem', fontWeight: 700, minWidth: 52, color: 'var(--accent)', textAlign: 'right' }}>{prefix}{value}{suffix}</span>
       </div>
     </div>
   )
 }
 
-function MealCard({ meal, isTop, score }) {
+function MealCard({ meal, isTop, score, locationHours }) {
   const badges = []
   if (meal.halal) badges.push({ label: 'Halal', bg: '#052a1a', color: '#4ade80', border: '#166534' })
   if (meal.vegetarian) badges.push({ label: 'Veg', bg: '#1a2e05', color: '#a3e635', border: '#3f6212' })
@@ -272,26 +227,29 @@ function MealCard({ meal, isTop, score }) {
   if (meal.glutenFree) badges.push({ label: 'GF', bg: '#1a1a2e', color: '#a5b4fc', border: '#3730a3' })
 
   return (
-    <div style={{
-      background: 'var(--surface)', border: `0.5px solid ${isTop ? 'var(--accent)' : 'var(--border)'}`,
-      borderRadius: 14, padding: '1.1rem 1.25rem', position: 'relative', overflow: 'hidden', transition: 'border-color 0.15s'
-    }}>
+    <div style={{ background: 'var(--surface)', border: `0.5px solid ${isTop ? 'var(--accent)' : 'var(--border)'}`, borderRadius: 14, padding: '1.1rem 1.25rem', position: 'relative', overflow: 'hidden' }}>
       {isTop && (
-        <div style={{
-          position: 'absolute', top: 0, right: 0, background: 'var(--accent)', color: '#0f0f0f',
-          fontSize: 10, fontWeight: 700, padding: '3px 10px', borderBottomLeftRadius: 10,
-          letterSpacing: '0.06em', textTransform: 'uppercase'
-        }}>
+        <div style={{ position: 'absolute', top: 0, right: 0, background: 'var(--accent)', color: '#0f0f0f', fontSize: 10, fontWeight: 700, padding: '3px 10px', borderBottomLeftRadius: 10, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
           Top Pick
         </div>
       )}
 
-      <div className="font-display" style={{ fontWeight: 700, fontSize: '1rem', paddingRight: 70, marginBottom: 2 }}>
-        {meal.name}
+      <div className="font-display" style={{ fontWeight: 700, fontSize: '1rem', paddingRight: 70, marginBottom: 2 }}>{meal.name}</div>
+      
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: '0.9rem' }}>
+        <span style={{ fontSize: 12, color: 'var(--muted)' }}>{meal.location} · {meal.section}</span>
+        {locationHours && (
+          <span style={{ fontSize: 10, padding: '1px 7px', borderRadius: 100, fontWeight: 600, background: locationHours.isOpen ? '#052a1a' : '#1a0a0a', color: locationHours.isOpen ? '#4ade80' : '#f87171', border: `0.5px solid ${locationHours.isOpen ? '#166534' : '#991b1b'}` }}>
+            {locationHours.isOpen ? '● Open' : '● Closed'}
+          </span>
+        )}
       </div>
-      <div style={{ fontSize: 12, color: 'var(--muted)', marginBottom: '0.9rem' }}>
-        {meal.location} · {meal.section}
-      </div>
+
+      {locationHours && !locationHours.isOpen && locationHours.hours && (
+        <div style={{ fontSize: 11, color: '#555', marginTop: -8, marginBottom: 10 }}>
+          Today: {locationHours.hours}
+        </div>
+      )}
 
       <div style={{ display: 'flex', gap: 18, alignItems: 'center' }}>
         <Stat label="Price" value={`$${meal.price.toFixed(2)}`} color="var(--accent)" />
@@ -306,12 +264,7 @@ function MealCard({ meal, isTop, score }) {
       {badges.length > 0 && (
         <div style={{ display: 'flex', gap: 5, marginTop: '0.75rem', flexWrap: 'wrap' }}>
           {badges.map((b, i) => (
-            <span key={i} style={{
-              fontSize: 10, padding: '2px 8px', borderRadius: 100, fontWeight: 500,
-              background: b.bg, color: b.color, border: `0.5px solid ${b.border}`
-            }}>
-              {b.label}
-            </span>
+            <span key={i} style={{ fontSize: 10, padding: '2px 8px', borderRadius: 100, fontWeight: 500, background: b.bg, color: b.color, border: `0.5px solid ${b.border}` }}>{b.label}</span>
           ))}
         </div>
       )}
