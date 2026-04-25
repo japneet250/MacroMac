@@ -240,6 +240,22 @@ function MealCard({ meal, isTop, score, locationHours }) {
   if (meal.vegan) badges.push({ label: 'Vegan', bg: '#1a2e05', color: '#a3e635', border: '#3f6212' })
   if (meal.glutenFree) badges.push({ label: 'GF', bg: '#1a1a2e', color: '#a5b4fc', border: '#3730a3' })
 
+  const getStatusText = (hours) => {
+    if (!hours || !hours.hours) return hours?.isOpen ? 'Open' : 'Closed'
+    
+    if (hours.isOpen) {
+      return `Open · ${hours.hours}`
+    }
+
+    // Parse hours to show opening time when closed
+    const match = hours.hours.match(/(\d{1,2}):(\d{2})\s(AM|PM)/)
+    if (match) {
+      return `Closed · Opens ${match[1]}:${match[2]} ${match[3]}`
+    }
+
+    return 'Closed'
+  }
+
   return (
     <div style={{ background: 'var(--surface)', border: `0.5px solid ${isTop ? 'var(--accent)' : 'var(--border)'}`, borderRadius: 14, padding: '1.1rem 1.25rem', position: 'relative', overflow: 'hidden' }}>
       {isTop && (
@@ -254,7 +270,7 @@ function MealCard({ meal, isTop, score, locationHours }) {
         <span style={{ fontSize: 12, color: 'var(--muted)' }}>{meal.location} · {meal.section}</span>
         {locationHours && (
           <span style={{ fontSize: 10, padding: '1px 7px', borderRadius: 100, fontWeight: 600, background: locationHours.isOpen ? '#052a1a' : '#1a0a0a', color: locationHours.isOpen ? '#4ade80' : '#f87171', border: `0.5px solid ${locationHours.isOpen ? '#166534' : '#991b1b'}` }}>
-            {locationHours.isOpen ? `Open · ${locationHours.hours || 'now'}` : '● Closed'}
+            {getStatusText(locationHours)}
           </span>
         )}
       </div>
