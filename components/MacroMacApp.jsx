@@ -212,9 +212,18 @@ export default function MacroMacApp({ meals }) {
         </div>
       )}
 
+      {/* Footer */}
       <div style={{ marginTop: '2rem', fontSize: 11, color: '#333', textAlign: 'center' }}>
-        Data from <a href="https://macnutrition.mcmaster.ca" target="_blank" rel="noopener noreferrer" style={{ color: '#444' }}>macnutrition.mcmaster.ca</a> · Hours from McMaster Hospitality · Updated daily
+        {/* Data sourced from{' '}
+        <a href="https://macnutrition.mcmaster.ca" target="_blank" rel="noopener noreferrer" style={{ color: '#444' }}>
+          macnutrition.mcmaster.ca
+        </a> */}
+        {' '}· Updated daily · Built for Mac students By a Mac Student 🦅
       </div>
+
+      {/* <div style={{ marginTop: '2rem', fontSize: 11, color: '#333', textAlign: 'center' }}>
+        Data from <a href="https://macnutrition.mcmaster.ca" target="_blank" rel="noopener noreferrer" style={{ color: '#444' }}>macnutrition.mcmaster.ca</a> · Hours from McMaster Hospitality · Updated daily
+      </div> */}
 
       <style>{`@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }`}</style>
     </main>
