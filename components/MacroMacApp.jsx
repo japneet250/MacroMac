@@ -14,6 +14,7 @@ export default function MacroMacApp({ meals }) {
   const [aiLoading, setAiLoading] = useState(false)
   const [hours, setHours] = useState({})
 
+  
   // Fetch live hours on load
   useEffect(() => {
     fetch('/api/hours')
