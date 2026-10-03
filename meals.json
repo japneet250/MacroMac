@@ -1,5 +1,5 @@
 {
-  "scrapedAt": "2026-10-02T16:28:10.340Z",
+  "scrapedAt": "2026-10-03T15:02:36.384Z",
   "totalItems": 1241,
   "meals": [
     {
@@ -620,13 +620,13 @@
       "section": "All Day Menu",
       "course": "All Day",
       "price": 9.99,
-      "calories": 262,
-      "fat": 16.15,
-      "sodium": 398,
+      "calories": 479,
+      "fat": 21.78,
+      "sodium": 495,
       "carbs": 25.07,
       "fibre": 2.4,
       "sugars": 3.24,
-      "protein": 5.23,
+      "protein": 43.86,
       "halal": true,
       "vegetarian": false,
       "vegan": false,
@@ -795,7 +795,7 @@
       "glutenFree": false
     },
     {
-      "name": "Shrd Med Cheddar Wht",
+      "name": "Cheddar Cheese Shredded Medium",
       "location": "Bistro 2 Go",
       "section": "All Day Menu",
       "course": "Add Ons",
