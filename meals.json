@@ -1,5 +1,5 @@
 {
-  "scrapedAt": "2026-10-07T17:39:22.069Z",
+  "scrapedAt": "2026-10-08T17:41:56.031Z",
   "totalItems": 1241,
   "meals": [
     {
@@ -16761,7 +16761,7 @@
       "glutenFree": true
     },
     {
-      "name": "Lp Chicken Shawarma Wrap",
+      "name": "Lp Chicken Wrap",
       "location": "La Piazza",
       "section": "Tazij",
       "course": "Meat Based Entrees",
@@ -16779,7 +16779,7 @@
       "glutenFree": false
     },
     {
-      "name": "Chicken Shawarma Salad Bowl",
+      "name": "Chicken Salad Bowl",
       "location": "La Piazza",
       "section": "Tazij",
       "course": "Meat Based Entrees",
@@ -16797,7 +16797,7 @@
       "glutenFree": true
     },
     {
-      "name": "Chicken Shawarma Rice Bowl",
+      "name": "Chicken Rice Bowl",
       "location": "La Piazza",
       "section": "Tazij",
       "course": "Meat Based Entrees",
