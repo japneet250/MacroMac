@@ -1,5 +1,5 @@
 {
-  "scrapedAt": "2026-10-16T15:09:16.565Z",
+  "scrapedAt": "2026-10-17T14:02:30.038Z",
   "totalItems": 1241,
   "meals": [
     {
@@ -939,22 +939,22 @@
       "glutenFree": false
     },
     {
-      "name": "St Garden Salad",
+      "name": "Garden Salad",
       "location": "Bistro 2 Go",
       "section": "All Day Menu",
       "course": "Add Ons",
-      "price": 5.49,
-      "calories": 17,
-      "fat": 0.03,
-      "sodium": 10,
-      "carbs": 3.21,
-      "fibre": 1.4,
-      "sugars": 0.93,
-      "protein": 1.03,
+      "price": 2.79,
+      "calories": 143,
+      "fat": 11.04,
+      "sodium": 460,
+      "carbs": 9.49,
+      "fibre": 1.7,
+      "sugars": 5.25,
+      "protein": 1.27,
       "halal": false,
-      "vegetarian": false,
-      "vegan": false,
-      "glutenFree": false
+      "vegetarian": true,
+      "vegan": true,
+      "glutenFree": true
     },
     {
       "name": "Egg Mac Hashbrown",
